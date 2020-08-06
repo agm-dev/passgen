@@ -12,15 +12,17 @@ export type PassType = "alpha" | "num" | "alphanum" | "alphanumExt" | "words-es"
 export type PassStrength = "very weak" | "weak" | "reasonable" | "strong" | "very strong" | "overkill"
 
 export interface PassOptions {
-  type: PassType,
-  number: number,
-  caps: boolean,
+  type: PassType
+  number: number
+  caps: boolean
 }
 
 export interface PassData extends PassOptions {
-  pass: string,
-  entropy: number,
-  strength: PassStrength,
+  pass: string
+  entropy: number
+  strength: PassStrength
+  relativeEntropy: number
+  relativeStrength: PassStrength
 }
 
 export function generatePass({ type, number, caps }: PassOptions): PassData {
@@ -54,12 +56,14 @@ export function generatePass({ type, number, caps }: PassOptions): PassData {
     return source[randomIndex]
   }).join("")
 
-  const entropy = calculateentropy(source, pass)
+  const { entropy, relativeEntropy } = calculateEntropy(source, number, pass)
   const strength = calculateStrength(entropy)
-  return { type, number, caps, pass, entropy, strength }
+  const relativeStrength = calculateStrength(relativeEntropy)
+
+  return { type, number, caps, pass, entropy, strength, relativeEntropy, relativeStrength }
 }
 
-function calculateentropy(pool: string[], password: string): number {
+function calculateEntropy(pool: string[], number: number, password: string): { entropy: number, relativeEntropy: number } {
   // e = log2(r**l)
   // e: password entropy
   // r: pool of unique characters
@@ -67,7 +71,12 @@ function calculateentropy(pool: string[], password: string): number {
 
   const r = [...new Set(pool.flatMap(i => i.split("")))].length
   const l = password.length
-  return Math.log2(r**l)
+  const R = [...new Set(pool)].length
+  const L = number
+  return {
+    entropy: Math.log2(r**l),
+    relativeEntropy: Math.log2(R**L)
+  }
 }
 
 function calculateStrength(entropy: number): PassStrength {
