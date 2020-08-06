@@ -19,7 +19,7 @@ export interface PassOptions {
 
 export interface PassData extends PassOptions {
   pass: string,
-  entrophy: number,
+  entropy: number,
   strength: PassStrength,
 }
 
@@ -54,14 +54,14 @@ export function generatePass({ type, number, caps }: PassOptions): PassData {
     return source[randomIndex]
   }).join("")
 
-  const entrophy = calculateEntrophy(source, pass)
-  const strength = calculateStrength(entrophy)
-  return { type, number, caps, pass, entrophy, strength }
+  const entropy = calculateentropy(source, pass)
+  const strength = calculateStrength(entropy)
+  return { type, number, caps, pass, entropy, strength }
 }
 
-function calculateEntrophy(pool: string[], password: string): number {
+function calculateentropy(pool: string[], password: string): number {
   // e = log2(r**l)
-  // e: password entrophy
+  // e: password entropy
   // r: pool of unique characters
   // l: number of characters in the password
 
@@ -70,20 +70,20 @@ function calculateEntrophy(pool: string[], password: string): number {
   return Math.log2(r**l)
 }
 
-function calculateStrength(entrophy: number): PassStrength {
-  if (entrophy < 28) {
+function calculateStrength(entropy: number): PassStrength {
+  if (entropy < 28) {
     return "very weak"
   }
-  if (entrophy < 36) {
+  if (entropy < 36) {
     return "weak"
   }
-  if (entrophy < 60) {
+  if (entropy < 60) {
     return "reasonable"
   }
-  if (entrophy < 128) {
+  if (entropy < 128) {
     return "strong"
   }
-  if (entrophy < 200) {
+  if (entropy < 200) {
     return "very strong"
   }
   return "overkill"
